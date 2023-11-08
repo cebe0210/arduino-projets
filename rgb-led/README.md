@@ -30,8 +30,8 @@ exemple :
 
 - Arduino UNO.
 - 1 encodeur digital rotatif ***Whadda :*** **WPI435**.
-- 7 Leds RGB a anode commune. (3*2 pour l'interieur + 1 pour le parametrage).
-- 21 resistances 220ohms.
+- 5 Leds RGB a anode commune. (2*2 pour l'interieur + 1 pour le parametrage).
+- 15 resistances 220ohms.
 - 1 BreaBoard *pour les tests*
 
 **Arduino UNO :**
@@ -53,14 +53,15 @@ exemple :
 
 ## Fonctionnement :
 
-
-
+La lampe est consituer de 2x2 leds RGB qui fond l'eclairage principal. Elle sont nommées : **led1** et **led2**.
+Il y a une troisième led RGB qui permet à l'utilisateur de voir dans quel mode il se trouve. **led0**
+Un encodeur rotatif permet le controler de lampe.
 
 **Encodeur digital rotatif :**
 
-L'encodeur rotatif **Whadda : WPI435** possède un fonction rotative ainsi qu'un fonction switch lorsque l'on presse le bouton.
+L'encodeur rotatif **Whadda : WPI435** possède un fonction rotative à 20 crans par revolution, ainsi qu'un fonction switch lorsque l'on presse le bouton.
 
-### Comportement de l'encodeur :
+#### Comportement de l'encodeur :
 
 Par defaut lors de l'allumage de l'arduino, toutes les leds sont etteintent.
 
@@ -91,8 +92,20 @@ Par defaut lors de l'allumage de l'arduino, toutes les leds sont etteintent.
 - clic-7
     - *Eteint toutes les leds*
     - *Remet le compteur de clic à 0*
-    
+
+## Fonctions à ajouter :
+
+- reglage de l'intensité lumineuse lors d'un double clic sur le bouton. 
+- divers mode de couleur.
+- Changement de couleur au rythme de la musique avec un capteur audio.
+- Pilotage via une interface web en local. **Ajout module wifi/bleutooth** au **Arduino UNO**.
+- Realisation d'un app android pour le controle de la lampe.
+- Connecter la lampe à **google Home** afin de la controler. 
+
+
 ## Code :
+
+**Particulatiré : Je dois inverser la valeur RGB pour mes leds. 0=100% et 255=0%**
 
     #include <Encoder.h>
 
