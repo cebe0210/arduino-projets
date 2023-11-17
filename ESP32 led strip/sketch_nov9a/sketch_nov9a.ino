@@ -1,3 +1,4 @@
+
 #define BLYNK_TEMPLATE_ID "TMPL5t5IOyASk"
 #define BLYNK_TEMPLATE_NAME "domotique"
 #define BLYNK_AUTH "8NLEiJAFRVHSsJGV_otGcU9eP-1yNjRO"  // Remplacez par l'ID de votre modèle Blynk
@@ -15,7 +16,13 @@
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRBW + NEO_KHZ800);
 
+bool ledState = false;
+
+unsigned long lastVisualEffectTime = 0;
+unsigned long visualEffectInterval = 5000;
+
 void setup() {
+  Serial.begin(115200);
   strip.begin();
   strip.show();  // Initialisation de toutes les LED à l'état éteint
 
@@ -24,9 +31,9 @@ Blynk.begin(BLYNK_AUTH, WIFI_SSID, WIFI_PASS);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-    Serial.println("Connexion en cours...");
+    //Serial.println("Connexion en cours...");
   }
-  Serial.println("Connecté au réseau Wi-Fi");
+  //Serial.println("Connecté au réseau Wi-Fi");
 
   // Connexion à Blynk
   Blynk.begin(BLYNK_AUTH, WIFI_SSID, WIFI_PASS);
@@ -38,38 +45,112 @@ void loop() {
 }
 
 BLYNK_WRITE(V1) {
-  int brightness = param.asInt();
-  setBrightness(brightness);
+  int switchState = param.asInt();
+  Serial.print("Visuals effect demo: ");
+  Serial.println(switchState);
+
+  if (switchState == 1) {
+    Serial.println("LEDs ON");
+    runVisualEffects();
+    ledState = true;
+    
+
+  } if (switchState == 0) {
+    Serial.println("LEDs OFF");
+    turnOffLEDs();
+    ledState = false;
+  }
+  // Informez Blynk de l'état actuel du bouton
+  Blynk.virtualWrite(V1, ledState ? 1 : 0);
 }
 
 BLYNK_WRITE(V2) {
   int switchState = param.asInt();
-  Serial.print("Switch state: ");
+  Serial.print("Warm White: ");
   Serial.println(switchState);
 
   if (switchState == 1) {
     Serial.println("LEDs ON");
     turnOnLEDs();
-  } else {
+    ledState = true;
+
+  } if (switchState == 0) {
     Serial.println("LEDs OFF");
     turnOffLEDs();
+    ledState = false;
   }
+  // Informez Blynk de l'état actuel du bouton
+  Blynk.virtualWrite(V2, ledState ? 1 : 0);
+}
+BLYNK_WRITE(V3) {
+  int switchState = param.asInt();
+  Serial.print("Warm White: ");
+  Serial.println(switchState);
+
+  if (switchState == 1) {
+    Serial.println("LEDs ON");
+    setStripColor(255, 214, 0, 0, 127);  // Couleur 1
+    ledState = true;
+  } else if (switchState == 2) {
+    Serial.println("LEDs ON");
+    setStripColor(255, 0, 214, 0, 127);  // Couleur 2
+    ledState = true;
+  } else if (switchState == 3) {
+    Serial.println("LEDs ON");
+    setStripColor(0, 0, 214, 0, 127);  // Couleur 3
+    ledState = true;
+  } else if (switchState == 0) {
+    Serial.println("LEDs OFF");
+    turnOffLEDs();
+    ledState = false;
+  }
+  // Informez Blynk de l'état actuel du bouton
+  Blynk.virtualWrite(V3, ledState ? 1 : 0);
 }
 
 
 
-// Fonction pour régler la couleur du ruban LED
-void setStripColor(uint32_t color) {
+
+void setStripColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t white, uint8_t brightness) {
+  // Utilisez les composants pour définir la couleur du ruban LED
+  uint32_t color = strip.Color(red, green, blue, white);
+  
   for(int i=0; i<strip.numPixels(); i++) {
     strip.setPixelColor(i, color);
   }
   strip.show();
-  rainbowCycle(20); // Effet arc-en-ciel
-  theaterChase(strip.Color(255, 0, 0, 0), 50); // Effet de poursuite théâtrale rouge
-  colorWipe(strip.Color(0, 255, 0, 0), 50); // Effet de balayage vert
-  theaterChase(strip.Color(0, 0, 255, 0), 50); // Effet de poursuite théâtrale bleu
-  randomFlash(30); // Flash de couleurs aléatoires
-  colorBounce(strip.Color(255, 255, 255, 0), 50); // Effet rebond de couleur blanche
+}
+
+
+// void runVisualEffects() {
+//   while (ledState){
+//     rainbowCycle(20);
+//     theaterChase(strip.Color(255, 0, 0, 0), 50);
+//     colorWipe(strip.Color(0, 255, 0, 0), 50);
+//     theaterChase(strip.Color(0, 0, 255, 0), 50);
+//     randomFlash(30);
+//     colorBounce(strip.Color(255, 255, 255, 0), 50);
+//   }
+// }
+void runVisualEffects() {
+  // unsigned long currentMillis = millis();
+  
+  // // Exécute les effets visuels pendant 10 secondes après activation
+  // while (millis() - lastVisualEffectTime < 10000) {
+    rainbowCycle(20);
+    theaterChase(strip.Color(255, 0, 0, 0), 50);
+    colorWipe(strip.Color(0, 255, 0, 0), 50);
+    theaterChase(strip.Color(0, 0, 255, 0), 50);
+    randomFlash(30);
+    colorBounce(strip.Color(255, 255, 255, 0), 50);
+    delay(50);  // Ajoutez un délai pour éviter de bloquer le processeur
+  // }
+  // Éteignez les LEDs après 10 secondes
+  //turnOffLEDs();
+  //ledState = false;
+  
+  // Informez Blynk de l'état actuel du bouton
+  //Blynk.virtualWrite(V1, ledState ? 1 : 0);
 }
 
 // Fonction pour faire défiler une couleur sur le ruban LED
@@ -112,7 +193,7 @@ void theaterChase(uint32_t color, int wait) {
 
 // Fonction pour faire flasher des couleurs aléatoires
 void randomFlash(int wait) {
-  for(int i=0; i<5; i++) {
+  for(int i=0; i<100; i++) {
     int randomLed = random(strip.numPixels());
     strip.setPixelColor(randomLed, strip.Color(random(256), random(256), random(256), random(256)));
     strip.show();
@@ -152,17 +233,18 @@ uint32_t Wheel(byte WheelPos) {
 }
 // Fonction pour allumer les LEDs
 void turnOnLEDs() {
-  setStripColor(strip.Color(255, 127, 0, 127));  // Couleur blanche
+  setStripColor(255, 214, 170, 0, 127);  // Couleur blanche
 }
 
-// Fonction pour éteindre les LEDs
 void turnOffLEDs() {
-  setStripColor(strip.Color(0, 0, 0, 0));  // Couleur noire
+  setStripColor(0, 0, 0, 0, 0);  // Couleur noire
 }
+
 
 // Fonction pour régler la luminosité du ruban LED
 void setBrightness(int brightness) {
   strip.setBrightness(brightness);
   strip.show();
 }
+
 
